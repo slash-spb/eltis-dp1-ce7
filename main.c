@@ -1,4 +1,3 @@
-
 #define F_CPU 1000000 // Clock Speed
 
 #include <util/delay.h>
@@ -147,6 +146,7 @@ enum States
 
 // Основная функция программы.
 void main(void) {
+  unsigned char call_cnt_len = 0;
 
   unsigned char ln1_ncall;
   unsigned char ln2_ncall;
@@ -229,6 +229,13 @@ void main(void) {
   //delay_1s();
   //USART_Transmit(video_k4);
 
+  //PORTC |= (1 << DDC0);//Turn on video Vi1
+  //PORTC |= (1 << DDC1);//Turn on video Vi2
+
+  //for(;;) {
+  //  delay_800us();
+  //}
+
   for(;;) { 
     delay_800us();
 
@@ -284,7 +291,13 @@ void main(void) {
           break;
         case ST_CALL_LN1:
           //USART_Transmit(0x3);
-          if ( call_ln1_pulse_cnt == 0 ) {
+          //On real line after call LN do not goes low, always high.
+          //So this condition do not work.
+          //if ( call_ln1_pulse_cnt == 0 ) {
+          call_cnt_len = call_cnt_len + 1;
+          //Give 30 seconds for call
+          if ( call_cnt_len == 12 ) {
+            call_cnt_len = 0;
             state = ST_IDLE;
             //Unconnect from line
             ln_sel(2);
@@ -294,7 +307,11 @@ void main(void) {
           break;
         case ST_CALL_LN2:
           //USART_Transmit(0x5);
-          if ( call_ln2_pulse_cnt == 0 ) {
+          //if ( call_ln2_pulse_cnt == 0 ) {
+          call_cnt_len = call_cnt_len + 1;
+          //Give 30 seconds for call
+          if ( call_cnt_len == 12 ) {
+            call_cnt_len = 0;
             state = ST_IDLE;
             //Unconnect from line
             ln_sel(2);
