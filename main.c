@@ -271,20 +271,23 @@ void main(void) {
       switch(state) {
         case ST_IDLE:
           //USART_Transmit(0x0);
+          //DVR use first channel
+          if ( video_k2 ) {
+            PORTC |= (1 << DDC0);//Turn on video Vi1
+          }
+
           if ( call_ln1_pulse_cnt > 100 ) {
             state = ST_CALL_LN1;
             //Make switching to LN1 line
             ln_sel(0);
-            if ( video_k2 ) {
-              PORTC |= (1 << DDC0);//Turn on video Vi1
-            }
             //USART_Transmit(0x1);
           } else if ( call_ln2_pulse_cnt > 100  ) {
             state = ST_CALL_LN2;
             //Make switching to LN2 line
             ln_sel(1);
             if ( video_k3 ) {
-              PORTC |= (1 << DDC1);//Turn on video Vi2
+              PORTC &= ~(1 << DDC0);//Turn off video Vi1
+              PORTC |= (1 << DDC1); //Turn on video Vi2
             }
             USART_Transmit(video_k3);
           }
@@ -293,24 +296,24 @@ void main(void) {
           //USART_Transmit(0x3);
           //On real line after call LN do not goes low, always high.
           //So this condition do not work.
-          //if ( call_ln1_pulse_cnt == 0 ) {
-          call_cnt_len = call_cnt_len + 1;
+          if ( call_ln1_pulse_cnt == 0 ) {
+          //call_cnt_len = call_cnt_len + 1;
           //Give 30 seconds for call
-          if ( call_cnt_len == 12 ) {
+          //if ( call_cnt_len == 12 ) {
             call_cnt_len = 0;
             state = ST_IDLE;
             //Unconnect from line
             ln_sel(2);
-            PORTC &= ~(1 << DDC0);//
+            //PORTC &= ~(1 << DDC0);//
             //USART_Transmit(0x4);
           }
           break;
         case ST_CALL_LN2:
           //USART_Transmit(0x5);
-          //if ( call_ln2_pulse_cnt == 0 ) {
-          call_cnt_len = call_cnt_len + 1;
+          if ( call_ln2_pulse_cnt == 0 ) {
+          //call_cnt_len = call_cnt_len + 1;
           //Give 30 seconds for call
-          if ( call_cnt_len == 12 ) {
+          //if ( call_cnt_len == 12 ) {
             call_cnt_len = 0;
             state = ST_IDLE;
             //Unconnect from line
